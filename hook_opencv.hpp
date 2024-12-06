@@ -100,6 +100,16 @@ public:
     return func(src, dst);
   }
 
+  static inline void cvCvtColor(
+    const CvArr* src, CvArr* dst,
+    int code
+  ){
+    using FType = void(const CvArr*, CvArr*, int);
+    auto& singleton = getSingleton();
+    static auto func = (FType*)dlsym(singleton.libopencv_imgproc_handle, "cvCvtColor");
+    return func(src, dst, code);
+  }
+
 
   void* libopencv_core_handle{nullptr};
   void* libopencv_imgproc_handle{nullptr};
