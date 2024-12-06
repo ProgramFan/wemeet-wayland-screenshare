@@ -317,6 +317,7 @@ void payload_main(){
   if (portal_handle->status.load() == XdpScreencastPortalStatus::kCancelled) {
     fprintf(stderr, "%s", red_text("[payload] screencast cancelled. stop gio and join gio thread. \n").c_str());
     g_main_loop_quit(portal_handle->gio_mainloop);
+    x11_sanitizer_thread.join();
     portal_gio_mainloop_thread.join();
     return;
   }

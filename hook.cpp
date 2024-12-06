@@ -138,7 +138,16 @@ std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> get_resize_param(
 
 
 void XShmGetImageHook(XImage& image){
-  
+
+  auto& interface_singleton = InterfaceSingleton::getSingleton();
+
+  if (interface_singleton.interface_handle.load() == nullptr){
+    fprintf(stderr, "%s", red_text("[hook] hook will NOT work as you have cancelled the screencast!!!\n").c_str());
+    return;
+  }
+
+  auto& framebuf_queue = interface_singleton.interface_handle.load()->frame_buf_queue;
+
   auto ximage_spa_format = ximage_to_spa(image);
   auto ximage_width = image.width;
   auto ximage_height = image.height;
@@ -150,10 +159,6 @@ void XShmGetImageHook(XImage& image){
     CV_8UC4, image.data, ximage_bytes_per_line
   );
   OpencvDLFCNSingleton::cvSetZero(&ximage_cvmat);
-
-  
-  auto& interface_singleton = InterfaceSingleton::getSingleton();
-  auto& framebuf_queue = interface_singleton.interface_handle.load()->frame_buf_queue;
 
   // critical section begins
 
