@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <spa/param/video/format-utils.h>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <X11/Xlib.h>
@@ -13,6 +14,25 @@ enum class SpaVideoFormat_e {
   BGR = SPA_VIDEO_FORMAT_BGR,
   INVALID = -1
 };
+
+inline std::string spa_to_string(SpaVideoFormat_e const& format){
+  switch (format) {
+    case SpaVideoFormat_e::RGBx:
+      return "RGBx";
+    case SpaVideoFormat_e::BGRx:
+      return "BGRx";
+    case SpaVideoFormat_e::RGBA:
+      return "RGBA";
+    case SpaVideoFormat_e::BGRA:
+      return "BGRA";
+    case SpaVideoFormat_e::RGB:
+      return "RGB";
+    case SpaVideoFormat_e::BGR:
+      return "BGR";
+    default:
+      return "INVALID";
+  }
+}
 
 // A VERY tedious color convert code getter
 // This can be handled more gracefully using something like string matching...

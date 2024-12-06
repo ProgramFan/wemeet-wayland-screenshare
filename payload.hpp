@@ -165,11 +165,12 @@ struct PipewireScreenCast {
                 SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
                 SPA_FORMAT_mediaType,       SPA_POD_Id(SPA_MEDIA_TYPE_video),
                 SPA_FORMAT_mediaSubtype,    SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-                SPA_FORMAT_VIDEO_format,    SPA_POD_CHOICE_ENUM_Id(5,
+                SPA_FORMAT_VIDEO_format,    SPA_POD_CHOICE_ENUM_Id(6,
                                                 SPA_VIDEO_FORMAT_RGB,
                                                 SPA_VIDEO_FORMAT_BGR,
                                                 SPA_VIDEO_FORMAT_RGBA,
                                                 SPA_VIDEO_FORMAT_BGRA,
+                                                SPA_VIDEO_FORMAT_RGBx,
                                                 SPA_VIDEO_FORMAT_BGRx
                                                 ),
                 SPA_FORMAT_VIDEO_size,      SPA_POD_CHOICE_RANGE_Rectangle(
@@ -261,7 +262,7 @@ private:
                                   "height: " + std::to_string(height) + " | " +
                                   "framerate: " + std::to_string(framerate) + " | " +
                                   "max_framerate: " + std::to_string(max_framerate) + " | " +
-                                  "format: " + std::to_string(static_cast<int>(format)) + " | " +
+                                  "format: " + spa_to_string(format) + " | " +
                                   "param_good: " + std::to_string(param_good);
       
       fprintf(stderr, "%s", yellow_text("[payload pw] actual params: " + reporting_str + "\n").c_str());
