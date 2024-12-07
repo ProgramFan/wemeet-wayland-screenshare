@@ -15,11 +15,6 @@
 
 using XWindow_t = Window;
 
-enum class DEType {
-  GNOME,
-  KDE,
-  Unknown
-};
 
 struct CandidateWindowInfo{
   XWindow_t window_id;
@@ -28,19 +23,6 @@ struct CandidateWindowInfo{
   int window_height;
 };
 
-DEType get_current_de_type(){
-  // get the DE type using envvar "XDG_SESSION_DESKTOP"
-  char* xdg_session_desktop = std::getenv("XDG_SESSION_DESKTOP");
-  if (xdg_session_desktop == nullptr) {
-    return DEType::Unknown;
-  }
-  if (std::string(xdg_session_desktop) == "KDE") {
-    return DEType::KDE;
-  } else if (std::string(xdg_session_desktop) == "gnome") {
-    return DEType::GNOME;
-  }
-  return DEType::Unknown;
-}
 
 std::vector<CandidateWindowInfo> x11_sanitizer_get_targets(
   Display* display,
@@ -148,11 +130,9 @@ std::vector<std::tuple<int, int>> get_screen_sizes(
 
 void x11_sanitizer_main()
 {
-
-  // get envvar "XDG_SESSION_TYPE" to determine the session type
+  // get the current session type
   // if it's "wayland", then the x11 sanitizer can just exit
-  char* xdg_session_type = getenv("XDG_SESSION_TYPE");
-  if (xdg_session_type && std::string(xdg_session_type) == "wayland") {
+  if (get_current_session_type() == SessionType::Wayland) {
     fprintf(stderr, "%s", green_text("[x11_sanitizer] wayland session detected. skipping x11 sanitizer. \n").c_str());
     return;
   }

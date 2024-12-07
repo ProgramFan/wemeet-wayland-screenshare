@@ -20,6 +20,46 @@
 
 #include "helpers.hpp"
 
+enum class DEType {
+  GNOME,
+  KDE,
+  Unknown // possibly wlr or hyprland, etc.
+};
+
+inline DEType get_current_de_type(){
+  // get the DE type using envvar "XDG_SESSION_DESKTOP"
+  char* xdg_session_desktop = std::getenv("XDG_SESSION_DESKTOP");
+  if (xdg_session_desktop == nullptr) {
+    return DEType::Unknown;
+  }
+  if (std::string(xdg_session_desktop) == "KDE") {
+    return DEType::KDE;
+  } else if (std::string(xdg_session_desktop) == "gnome") {
+    return DEType::GNOME;
+  }
+  return DEType::Unknown;
+}
+
+enum class SessionType {
+  Wayland,
+  X11,
+  Unknown // heck, unless you did not set the envar properly...
+};
+
+inline SessionType get_current_session_type(){
+  // get the current session type using envvar "XDG_SESSION_TYPE"
+  char* xdg_session_type = std::getenv("XDG_SESSION_TYPE");
+  if (xdg_session_type == nullptr) {
+    return SessionType::Unknown;
+  }
+  if (std::string(xdg_session_type) == "wayland") {
+    return SessionType::Wayland;
+  } else if (std::string(xdg_session_type) == "x11") {
+    return SessionType::X11;
+  }
+  return SessionType::Unknown;
+}
+
 enum class XdpScreencastPortalStatus {
   kInit,
   kRunning,
@@ -34,7 +74,9 @@ struct XdpScreencastPortal {
     portal = xdp_portal_new();
     XdpOutputType output_type = (XdpOutputType)(XdpOutputType::XDP_OUTPUT_MONITOR | XdpOutputType::XDP_OUTPUT_WINDOW);
     XdpScreencastFlags cast_flags = XdpScreencastFlags::XDP_SCREENCAST_FLAG_NONE;
-    XdpCursorMode cursor_mode = XdpCursorMode::XDP_CURSOR_MODE_EMBEDDED;
+    XdpCursorMode cursor_mode = get_current_session_type() == SessionType::Wayland ? 
+                                XDP_CURSOR_MODE_EMBEDDED :
+                                XDP_CURSOR_MODE_HIDDEN;
     XdpPersistMode persist_mode = XdpPersistMode::XDP_PERSIST_MODE_NONE;
     xdp_portal_create_screencast_session(
       portal,
