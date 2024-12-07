@@ -190,6 +190,25 @@ void XShmGetImageHook(XImage& image){
     &framebuffer_cvmat, &ximage_cvmat_roi, CV_INTER_LINEAR
   );
 
+  framebuf_queue.release_read();
+
+  // critical section ends
+
+  // do color convert
+  // here the code is currently mainly for wlroot WMs
+  // maybe we could shortcut this by detecting WM?
+
+  int cv_cAPI_color_cvt_code = get_opencv_cAPI_color_convert_code(
+    framebuffer_spa_format, ximage_spa_format
+  );
+
+  if (cv_cAPI_color_cvt_code != -1){
+    // non -1 code means color conversion is needed
+    OpencvDLFCNSingleton::cvCvtColor(
+      &ximage_cvmat_roi, &ximage_cvmat_roi, cv_cAPI_color_cvt_code
+    );
+  }
+
   // legacy stb implementation
   // resize the framebuffer to ximage size
   // note: by using STBIR_BGRA_PM we are essentially ignoring the alpha channel
@@ -203,15 +222,6 @@ void XShmGetImageHook(XImage& image){
   //   stbir_pixel_layout::STBIR_BGRA_PM
   // );
 
-  // TODO: convert color
-  // I think for the most cases the pixel layout of
-  // both X and pipewire would be BGR(A/X)
-  // But maybe there will be some rare cases where
-  // the pixel layout is different
-
-  framebuf_queue.release_read();
-
-  // critical section ends
 
   return;
   
