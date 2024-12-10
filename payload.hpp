@@ -23,12 +23,15 @@
 enum class DEType {
   GNOME,
   KDE,
-  Unknown // possibly wlr or hyprland, etc.
+  Hyprland, // Hyprland does not support XDP_CURSOR_MODE_HIDDEN, dang it... 
+  Unknown // possibly wlr or some other magical DE
 };
 
 inline DEType get_current_de_type(){
   // get the DE type using envvar "XDG_SESSION_DESKTOP"
   char* xdg_session_desktop = std::getenv("XDG_SESSION_DESKTOP");
+  std::string xdg_session_desktop_str = xdg_session_desktop;
+  std::string xdg_session_desktop_lower = toLowerString(xdg_session_desktop_str);
   if (xdg_session_desktop == nullptr) {
     return DEType::Unknown;
   }
@@ -36,6 +39,8 @@ inline DEType get_current_de_type(){
     return DEType::KDE;
   } else if (std::string(xdg_session_desktop) == "gnome") {
     return DEType::GNOME;
+  } else if (xdg_session_desktop_lower == "hyprland") {
+    return DEType::Hyprland;
   }
   return DEType::Unknown;
 }
@@ -77,6 +82,12 @@ struct XdpScreencastPortal {
     XdpCursorMode cursor_mode = get_current_session_type() == SessionType::Wayland ? 
                                 XDP_CURSOR_MODE_EMBEDDED :
                                 XDP_CURSOR_MODE_HIDDEN;
+    
+    // hyprland cursor mode workaround.
+    // as hyprland does not support XDP_CURSOR_MODE_HIDDEN, we simply use XDP_CURSOR_MODE_EMBEDDED for it
+    if (get_current_de_type() == DEType::Hyprland) {
+      cursor_mode = XDP_CURSOR_MODE_EMBEDDED;
+    }
     XdpPersistMode persist_mode = XdpPersistMode::XDP_PERSIST_MODE_NONE;
     xdp_portal_create_screencast_session(
       portal,

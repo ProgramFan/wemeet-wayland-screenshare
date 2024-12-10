@@ -27,3 +27,11 @@ inline std::string int_to_hexstr(int value) {
     ss << std::hex << value;
     return ss.str();
 }
+
+inline std::string toLowerString(const std::string& str) {
+    std::string lower_str = str;
+    for (char& c : lower_str) {
+        c = std::tolower(c);
+    }
+    return lower_str;
+}
