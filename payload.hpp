@@ -209,7 +209,7 @@ struct PipewireScreenCast {
     
     auto vidsize_default = SPA_RECTANGLE(320, 240);
     auto vidsize_min = SPA_RECTANGLE(1, 1);
-    auto vidsize_max = SPA_RECTANGLE(8192, 4096);
+    auto vidsize_max = SPA_RECTANGLE(DEFAULT_FB_ALLOC_WIDTH, DEFAULT_FB_ALLOC_HEIGHT);
     
     auto vidframerate_default = SPA_FRACTION(20, 1);
     auto vidframerate_min = SPA_FRACTION(0, 1);

@@ -45,10 +45,12 @@ struct Interface {
 
   Interface() = delete;
   Interface(
+    uint32_t fb_allocation_height,
+    uint32_t fb_allocation_width,
     uint32_t init_frame_height,
     uint32_t init_frame_width,
     SpaVideoFormat_e const& init_frame_format
-  ):framebuf(init_frame_height, init_frame_width, init_frame_format),
+  ):framebuf(fb_allocation_height, fb_allocation_width, init_frame_height, init_frame_width, init_frame_format),
     pw_stop_flag(false),
     payload_pw_stop_confirm(false),
     payload_gio_stop_confirm(false),

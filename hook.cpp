@@ -37,11 +37,8 @@
 // #define STB_IMAGE_RESIZE_IMPLEMENTATION
 // #include <stb/stb_image_resize2.h>
 
-
-constexpr int DEFAULT_FRAME_HEIGHT = 1080;
-constexpr int DEFAULT_FRAME_WIDTH = 1920;
-
-
+constexpr uint32_t DEFAULT_FRAME_HEIGHT = 1080;
+constexpr uint32_t DEFAULT_FRAME_WIDTH = 1920;
 
 void XShmAttachHook(){
 
@@ -50,6 +47,7 @@ void XShmAttachHook(){
   // initialize interface singleton:
   // (1) allocate the interface object
   interface_singleton.interface_handle = new Interface(
+    DEFAULT_FB_ALLOC_HEIGHT, DEFAULT_FB_ALLOC_WIDTH,
     DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_WIDTH, SpaVideoFormat_e::RGBA
   );
   // (2) allocate the screencast portal object

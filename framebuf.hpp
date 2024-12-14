@@ -6,7 +6,9 @@
 
 #include "format.hpp"
 
-constexpr size_t FrameBufferMaxSize = 8192 * 8192 * 4;
+constexpr uint32_t DEFAULT_FB_ALLOC_HEIGHT = 8192;
+constexpr uint32_t DEFAULT_FB_ALLOC_WIDTH = 8192;
+
 
 struct FrameBuffer {
 
@@ -18,15 +20,26 @@ struct FrameBuffer {
   ){
     update_param(height, width, format);
   }
+
+  inline FrameBuffer(
+    uint32_t allocation_height,
+    uint32_t allocation_width,
+    uint32_t init_height,
+    uint32_t init_width,
+    SpaVideoFormat_e const& format
+  ){
+    
+    data_size = allocation_height * allocation_width * 4;
+    data.reset(new uint8_t[data_size]);
+    update_param(init_height, init_width, format);
+    
+  }
   
   inline void update_param(
     uint32_t height,
     uint32_t width,
     SpaVideoFormat_e const& format
   ){
-    if (data.get() == nullptr) {
-      data.reset(new uint8_t[FrameBufferMaxSize]);
-    }
 
     int bytes_per_pixel = spa_videoformat_bytesize(format);
     if (bytes_per_pixel == -1) {
@@ -35,11 +48,6 @@ struct FrameBuffer {
 
     // always store in (height, width):(stride, 1) layout
     uint32_t needed_stride = (width * bytes_per_pixel + 4 - 1) / 4 * 4;
-    uint32_t needed_size = height * needed_stride;
-    if (needed_size > data_size) {
-      data_size = needed_size;
-    }
-    assert(data_size <= FrameBufferMaxSize);
     this->height = height;
     this->width = width;
     this->row_byte_stride = needed_stride;
