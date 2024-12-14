@@ -1,14 +1,23 @@
 
 
-# wemeet-wayland-screenshare--实现KDE/GNOME Wayland下腾讯会议屏幕共享(非虚拟相机)
+# wemeet-wayland-screenshare--实现Wayland下腾讯会议屏幕共享(非虚拟相机)
 
-长期以来，由于腾讯会议开发者的不作为，腾讯会议一直无法实现在Wayland下的屏幕共享，给Linux用户造成了极大的不便。但现在，很自豪地，本项目首次实现了在KDE/GNOME Wayland下使用腾讯会议的屏幕共享功能！特别地，有别于其他方案，**本项目不使用虚拟相机**，而是特别实现了一个hook库，使得用户可以在KDE/GNOME Wayland下正常使用腾讯会议的屏幕共享功能.
+长期以来，由于腾讯会议开发者的不作为，腾讯会议一直无法实现在Wayland下的屏幕共享，给Linux用户造成了极大的不便。但现在，很自豪地，本项目首次实现了在大部分Wayland环境下使用腾讯会议的屏幕共享功能！
+
+特别地，有别于其他方案，**本项目不使用虚拟相机**，而是特别实现了一个hook库，使得用户可以在大部分Wayland环境下正常使用腾讯会议的屏幕共享功能.
 
 
 
 ## ✨使用效果
 
-在几位贡献者的努力下，本项目现在已经可以同时支持KDE Wayland和GNOME Wayland下的腾讯会议屏幕共享功能. 下面的图片展示了使用步骤和效果：
+在几位贡献者的努力下，本项目现在已经可以支持大部分的DE/WM下的腾讯会议屏幕共享功能. 目前确认可用的DE/WM包括：
+
+- KDE Wayland
+- GNOME Wayland
+- Hyprland
+- wlroots-based (tested: sway, wayfire, labwc, river)
+
+下面的图片展示了使用步骤和效果：
 
 ![Inst1](./resource/instruction-1.png "instruction-1")
 ![Inst2](./resource/instruction-2.png "instruction-2")
@@ -33,7 +42,7 @@ yay -S wemeet-bin
 
 ```bash
 sudo pacman -S wireplumber
-sudo pacman -S libportal xdg-desktop-portal xdg-desktop-portal-kde xwaylandvideobridge opencv
+sudo pacman -S libportal xdg-desktop-portal xdg-desktop-portal-impl xwaylandvideobridge opencv
 ```
 
 - 注意：本项目在之前的版本中必须依赖于`pipewire-media-session`. 而现在经过测试已经确定`wireplumber`下可用. 如果系统中已经安装`pipewire-media-session`，pacman会在安装`wireplumber`时提示替换，你基本可以毫无顾虑地同意替换. 关于此问题具体的implication，还请自行查阅相关资料.
@@ -62,7 +71,7 @@ ninja
 LD_PRELOAD=$(readlink -f ./libhook.so) wemeet-x11
 ```
 
-按照上面的使用方法，你应该可以在KDE/GNOME Wayland下正常使用腾讯会议的屏幕共享功能了！
+按照上面的使用方法，你应该可以在Wayland下正常使用腾讯会议的屏幕共享功能了！
 - 注意：推荐使用`wemeet-x11`. 具体原因请见后文[兼容性和稳定性类](#兼容性和稳定性类-high-priority)部分.
 
 
@@ -85,7 +94,7 @@ yay -S wemeet-wayland-screenshare-git
 
 ```
 
-随后，在命令行执行`wemeet-wayland-screenshare`，或者直接在应用菜单中搜索`WemeetApp(KDE Wayland Screenshare)`，打开即可.
+随后，在命令行执行`wemeet-wayland-screenshare`，或者直接在应用菜单中搜索`WemeetApp(Wayland Screenshare)`，打开即可.
 
 ## 🔬原理概述
 
@@ -114,12 +123,10 @@ yay -S wemeet-wayland-screenshare-git
 
 ### 性能与效果类（Low priority）
 
-1. 当前，hook和payload通过一个framebuffer传递图像，而这个framebuffer当前的实现非常粗暴，其内部包含一个mutex来确保payload向其的写和hook向其的读不会冲突. 这样的实现可能降低了性能，并增加了功耗.
-   - 更具体地，观察到对于[灵耀16Air(UM5606)](https://wiki.archlinux.org/title/ASUS_Zenbook_UM5606) Ryzen AI HX 370, Windows下屏幕共享时最低封装功耗可达到5W左右，而本项目在KDE Wayland下的屏幕共享时最低封装功耗为6W左右. 实际的内存功耗可能更高.
-   - 当前，直接去除mutex是不可行的. 这是因为，在录制时，framebuffer的参数（如pixel format, height and width）可能会发生变化.
+1. framebuffer中的mutex导致的功耗偏高的问题已经在`Coekjan`的PR [#13](https://github.com/xuwd1/wemeet-wayland-screenshare/pull/13)中得到解决. 目前观察到对于[灵耀16Air(UM5606)](https://wiki.archlinux.org/title/ASUS_Zenbook_UM5606) Ryzen AI HX 370, 屏幕共享时的最低封装功耗可以低至4.7W左右，和Windows下的屏幕共享功耗基本相当.
 
 
-2. opencv的链接问题已经根据lilydjwg的issue得到了解决. 现在，借助opencv，本项目可以在保证aspect ratio不变的情况下对图像进行缩放.
+2. opencv的链接问题已经根据`lilydjwg`的issue [#1](https://github.com/xuwd1/wemeet-wayland-screenshare/issues/1)得到了解决. 现在，借助opencv，本项目可以在保证aspect ratio不变的情况下对图像进行缩放.
 
 
 
@@ -132,10 +139,11 @@ yay -S wemeet-wayland-screenshare-git
    - 根据贡献者`DerryAlex`的测试结果，**GNOME 43** + `wireplumber` (Unknown distro) 正常工作
    - 根据[#4](https://github.com/xuwd1/wemeet-wayland-screenshare/pull/4)中反馈的结果，**Manjaro GNOME 47** (+ possibly `wireplumber`) 正常工作
    - 根据`falser`的反馈，**ArchLinux Hyprland** + `wireplumber`正常工作
+   - 根据`novel2430`在[#9](https://github.com/xuwd1/wemeet-wayland-screenshare/issues/9)中的测试，典型的**wlroots-based DE/WM**下 (tested: sway, wayfire, labwc, river) 正常工作
 
 2. 目前，本项目只基于AUR package [wemeet-bin](https://aur.archlinux.org/packages/wemeet-bin)测试过. 特别地，在纯Wayland模式下（使用`wemeet`启动），wemeet本身存在一个恶性bug：尽管搭配本项目时，Linux用户可以将屏幕共享给其他用户，但当其他用户发起屏幕共享时，wemeet则会直接崩溃. 因此，本项目推荐启动X11模式的wemeet（使用`wemeet-x11`启动）.
 
-- 此时，KDE和GNOME下本项目仍然可以确保屏幕共享功能正常运行.
+- 此时，本项目仍然可以确保屏幕共享功能正常运行.
 - 而这主要得益于本项目新增加的x11 sanitizer，其会在屏幕共享时强制最小化wemeet的overlay（开始屏幕共享后2秒后生效），使得用户可以自由地点击包括xdg portal窗口在内的任何屏幕内容.
 
 
@@ -149,3 +157,7 @@ yay -S wemeet-wayland-screenshare-git
 - 感谢`lilydjwg`提出的issue. 他的建议解决了本项目无法链接到opencv库的问题，改善了本项目的性能和效果.
 
 - 感谢`DerryAlex`贡献的GNOME支持代码. 他出色的工作使得本项目可以在GNOME下正常工作，改进了x11 sanitizer的效果，并额外解决了项目中存在的一些问题.
+
+- 感谢`novel2430`的帮助. 他花费了大量时间和精力测试了本项目在wlroots-based DE/WM下的兼容性，并帮助了我们解决在这些环境下的一些问题.
+
+- 感谢`Coekjan`贡献的hugebuffer代码. 他的工作帮助本项目解决了framebuffer中的mutex导致的功耗偏高的问题.
