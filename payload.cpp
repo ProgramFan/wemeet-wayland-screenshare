@@ -211,7 +211,11 @@ void x11_sanitizer_main()
           case DEType::GNOME:
           case DEType::KDE:
           case DEType::Unknown:
-            // this unified strategy works well
+            // this unified strategy works well for most DEs
+            XUnmapWindow(display, picked_window_id);
+            break;
+          case DEType::Hyprland:
+            // FIXME: hyprland may need special workarounds
             XUnmapWindow(display, picked_window_id);
             break;
         }
@@ -245,6 +249,8 @@ std::thread payload_start_portal_gio_mainloop_thread(){
   return std::move(portal_gio_mainloop_thread);
 }
 
+constexpr float PW_MAX_CALLRATE = 60.0;
+constexpr int PW_MIN_CALLTIME_MS = 1000 / PW_MAX_CALLRATE;
 
 std::thread payload_start_pipewire_thread(){
   auto& interface_singleton = InterfaceSingleton::getSingleton();
@@ -256,7 +262,7 @@ std::thread payload_start_pipewire_thread(){
       while (interface_singleton.interface_handle.load()->pw_stop_flag.load() == false) {
         auto* pipewire_handle = interface_singleton.pipewire_handle.load();
         pw_loop_iterate(pw_main_loop_get_loop(pipewire_handle->pw_mainloop), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(PW_MIN_CALLTIME_MS));
       }
       fprintf(stderr, "%s", green_text("[payload] pw stop signal received. pw stopped. \n").c_str());
     }
