@@ -12,14 +12,7 @@ constexpr uint32_t DEFAULT_FB_ALLOC_WIDTH = 8192;
 
 struct FrameBuffer {
 
-  FrameBuffer() = default;
-  inline FrameBuffer(
-    uint32_t height,
-    uint32_t width,
-    SpaVideoFormat_e const& format
-  ){
-    update_param(height, width, format);
-  }
+  FrameBuffer() = delete;
 
   inline FrameBuffer(
     uint32_t allocation_height,
@@ -28,11 +21,9 @@ struct FrameBuffer {
     uint32_t init_width,
     SpaVideoFormat_e const& format
   ){
-    
     data_size = allocation_height * allocation_width * 4;
     data.reset(new uint8_t[data_size]);
     update_param(init_height, init_width, format);
-    
   }
   
   inline void update_param(
