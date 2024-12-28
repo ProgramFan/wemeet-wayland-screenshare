@@ -96,6 +96,25 @@ yay -S wemeet-wayland-screenshare-git
 
 随后，在命令行执行`wemeet-wayland-screenshare`，或者直接在应用菜单中搜索`WemeetApp(Wayland Screenshare)`，打开即可.
 
+### Fedora 相关
+
+安装相关开发包
+
+```bash
+sudo dnf install libportal-devel xdg-desktop-portal-devel opencv-devel xwaylandvideobridge libX11-devel libXrandr-devel libXcomposite-devel libXdamage-devel pipewire-devel
+```
+
+### Flatpak 相关
+
+对于通过 flatpak 安装的腾讯会议，需要通过如下设置才能正常使用：
+
+```bash
+sudo mkdir -p /opt/wemeet/lib
+sudo cp libhook.so /opt/wemeet/lib
+sudo flatpak override --filesystem=/opt/wemeet/lib com.tencent.wemeet
+sudo flatpak override --env=LD_PRELOAD=/opt/wemeet/lib/libhook.so com.tencent.wemeet
+```
+
 ## 🔬原理概述
 
 下面是本项目概念上的系统框图.
